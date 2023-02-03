@@ -261,7 +261,7 @@ func (c *client) run() {
 
 			// If the batch doesn't exist yet, we create a new one with the entry
 			if !ok {
-				batches[tenantID] = newBatch(c.maxStreams, e)
+				batches[tenantID] = newBatch(c.logger, c.maxStreams, e)
 				break
 			}
 
@@ -270,7 +270,7 @@ func (c *client) run() {
 			if batch.sizeBytesAfter(e) > c.cfg.BatchSize {
 				c.sendBatch(tenantID, batch)
 
-				batches[tenantID] = newBatch(c.maxStreams, e)
+				batches[tenantID] = newBatch(c.logger, c.maxStreams, e)
 				break
 			}
 

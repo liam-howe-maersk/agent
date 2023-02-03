@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/snappy"
 	"github.com/grafana/agent/component/common/loki"
@@ -25,6 +27,7 @@ const (
 // and entries in a single batch request. In case of multi-tenant Promtail, log
 // streams for each tenant are stored in a dedicated batch.
 type batch struct {
+	logger    log.Logger
 	streams   map[string]*logproto.Stream
 	bytes     int
 	createdAt time.Time
@@ -32,8 +35,9 @@ type batch struct {
 	maxStreams int
 }
 
-func newBatch(maxStreams int, entries ...loki.Entry) *batch {
+func newBatch(logger log.Logger, maxStreams int, entries ...loki.Entry) *batch {
 	b := &batch{
+		logger:     logger,
 		streams:    map[string]*logproto.Stream{},
 		bytes:      0,
 		createdAt:  time.Now(),
@@ -124,6 +128,12 @@ func (b *batch) createPushRequest() (*logproto.PushRequest, int) {
 
 	entriesCount := 0
 	for _, stream := range b.streams {
+		for _, entry := range stream.Entries {
+			if strings.HasPrefix(entry.Line, "longlogstart") {
+				line := entry.Line
+				level.Info(b.logger).Log("msg", fmt.Sprintf("longlog line starts with '%s' and ends with '%s", line[:20], line[len(line)-20:]))
+			}
+		}
 		req.Streams = append(req.Streams, *stream)
 		entriesCount += len(stream.Entries)
 	}
