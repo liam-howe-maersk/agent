@@ -122,6 +122,7 @@ func (b *batch) encode() ([]byte, int, error) {
 
 // creates push request and returns it, together with number of entries
 func (b *batch) createPushRequest() (*logproto.PushRequest, int) {
+	level.Info(b.logger).Log("msg", "Creating push request")
 	req := logproto.PushRequest{
 		Streams: make([]logproto.Stream, 0, len(b.streams)),
 	}
