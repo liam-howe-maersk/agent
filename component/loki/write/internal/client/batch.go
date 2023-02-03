@@ -129,7 +129,7 @@ func (b *batch) createPushRequest() (*logproto.PushRequest, int) {
 	entriesCount := 0
 	for _, stream := range b.streams {
 		for _, entry := range stream.Entries {
-			if strings.HasPrefix(entry.Line, "longlogstart") {
+			if strings.Contains(entry.Line, "longlogstart") {
 				line := entry.Line
 				level.Info(b.logger).Log("msg", fmt.Sprintf("longlog line starts with '%s' and ends with '%s", line[:20], line[len(line)-20:]))
 			}
